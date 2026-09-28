@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarbonTrack Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>CarbonTrack</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">Dashboard</button>
+                <button class="nav-item" data-view="households">Households</button>
+                <button class="nav-item" data-view="activities">Activity Logs</button>
+                <button class="nav-item" data-view="challenges">Challenges</button>
+                <button class="nav-item" data-view="leaderboard">Leaderboard</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button id="mobile-menu-btn" class="mobile-menu-btn">Menu</button>
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard</h1>
+                </div>
+                <div class="role-switcher" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                    <label for="current-role" style="margin-bottom: 0;">Role:</label>
+                    <select id="current-role" class="form-control" style="width: auto; padding: 5px 10px;">
+                        <option value="ADMIN">Admin</option>
+                        <option value="HOUSEHOLD">Family/User</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard View -->
+                <section id="view-dashboard" class="view active">
+                    <div class="dashboard-controls card">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="dashboard-household">Select Household</label>
+                                <select id="dashboard-household" class="form-control"></select>
+                            </div>
+                            <div class="col">
+                                <label for="dashboard-month">Select Month</label>
+                                <input type="month" id="dashboard-month" class="form-control">
+                            </div>
+                            <div class="col align-bottom">
+                                <button id="btn-load-dashboard" class="btn btn-primary w-100">Load Data</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dashboard-loading" class="loading-state hidden">Loading dashboard data...</div>
+                    <div id="dashboard-empty" class="empty-state">Select a household and month to view data.</div>
+
+                    <div id="dashboard-content" class="hidden">
+                        <div class="grid cards-grid">
+                            <div class="card stat-card">
+                                <h3>Total Footprint</h3>
+                                <div class="stat-value" id="dash-footprint">0.0</div>
+                                <div class="stat-label">kg CO2</div>
+                            </div>
+                            <div class="card stat-card">
+                                <h3>Reduction</h3>
+                                <div class="stat-value" id="dash-challenges">0%</div>
+                                <div class="stat-label">Compared to Baseline</div>
+                            </div>
+                            <div class="card stat-card">
+                                <h3>Monthly Ranking</h3>
+                                <div class="stat-value" id="dash-ranking">-</div>
+                                <div class="stat-label">On Leaderboard</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Households View -->
+                <section id="view-households" class="view hidden">
+                    <div class="grid layout-grid">
+                        <div class="col">
+                            <div class="card">
+                                <h2>Register Household</h2>
+                                <form id="form-household">
+                                    <div class="form-group">
+                                        <label for="hh-name">Household Name <span class="required">*</span></label>
+                                        <input type="text" id="hh-name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hh-location">Location <span class="required">*</span></label>
+                                        <input type="text" id="hh-location" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="btn-submit-hh">Register</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>All Households</h2>
+                                    <button class="btn btn-secondary btn-sm" id="btn-refresh-hh">Refresh</button>
+                                </div>
+                                <div id="hh-loading" class="loading-state hidden">Loading households...</div>
+                                <div class="table-responsive">
+                                    <table class="table" id="table-households">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Location</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="hh-empty" class="empty-state hidden">No households found.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activities View -->
+                <section id="view-activities" class="view hidden">
+                    <div class="card mb-4" id="card-log-activity">
+                        <h2>Log Activity</h2>
+                        <form id="form-activity">
+                            <div class="grid layout-grid-3">
+                                <div class="form-group">
+                                    <label for="act-household">Household <span class="required">*</span></label>
+                                    <select id="act-household" class="form-control" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="act-date">Date <span class="required">*</span></label>
+                                    <input type="date" id="act-date" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="act-mode">Commute Mode <span class="required">*</span></label>
+                                    <select id="act-mode" class="form-control" required>
+                                        <option value="">Select Mode</option>
+                                        <option value="CAR">Car</option>
+                                        <option value="PUBLIC_TRANSPORT">Public Transport</option>
+                                        <option value="BICYCLE">Bicycle</option>
+                                        <option value="WALK">Walk</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid layout-grid-3">
+                                <div class="form-group">
+                                    <label for="act-distance">Distance (km) <span class="required">*</span></label>
+                                    <input type="number" step="0.1" min="0" id="act-distance" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="act-electricity">Electricity (Units) <span class="required">*</span></label>
+                                    <input type="number" step="0.1" min="0" id="act-electricity" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="act-waste">Waste Generated (kg) <span class="required">*</span></label>
+                                    <input type="number" step="0.1" min="0" id="act-waste" class="form-control" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btn-submit-act">Log Activity</button>
+                        </form>
+                    </div>
+
+                    <div class="card" id="card-admin-activities" style="display: none;">
+                        <div class="card-header">
+                            <h2>All Logged Activities (Admin)</h2>
+                            <button class="btn btn-secondary btn-sm" id="btn-refresh-act">Refresh</button>
+                        </div>
+                        <div id="act-loading" class="loading-state hidden">Loading activities...</div>
+                        <div class="table-responsive">
+                            <table class="table" id="table-activities">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Household</th>
+                                        <th>Date</th>
+                                        <th>Mode</th>
+                                        <th>Distance</th>
+                                        <th>Electricity</th>
+                                        <th>Waste</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="act-empty" class="empty-state hidden">No activities logged yet.</div>
+                    </div>
+                </section>
+
+                <!-- Challenges View -->
+                <section id="view-challenges" class="view hidden">
+                    <div class="grid layout-grid">
+                        <div class="col" id="col-create-challenge">
+                            <div class="card">
+                                <h2>Create Challenge</h2>
+                                <form id="form-challenge">
+                                    <div class="form-group">
+                                        <label for="ch-name">Challenge Name <span class="required">*</span></label>
+                                        <input type="text" id="ch-name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ch-target">Target Reduction % <span class="required">*</span></label>
+                                        <input type="number" step="0.1" min="0" max="100" id="ch-target" class="form-control" required>
+                                    </div>
+                                    <div class="grid layout-grid-2">
+                                        <div class="form-group">
+                                            <label for="ch-start">Start Date <span class="required">*</span></label>
+                                            <input type="date" id="ch-start" class="form-control" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ch-end">End Date <span class="required">*</span></label>
+                                            <input type="date" id="ch-end" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="btn-submit-ch">Create Challenge</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col" id="col-list-challenges">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>All Challenges</h2>
+                                    <button class="btn btn-secondary btn-sm" id="btn-refresh-ch">Refresh</button>
+                                </div>
+                                <div id="ch-loading" class="loading-state hidden">Loading challenges...</div>
+                                <div class="table-responsive">
+                                    <table class="table" id="table-challenges">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Target</th>
+                                                <th>Dates</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="ch-empty" class="empty-state hidden">No challenges found.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin: All Participations Table -->
+                    <div class="card mt-4" id="card-admin-participations" style="display: none; margin-top: 20px;">
+                        <div class="card-header">
+                            <h2>All Registered Participations (Admin)</h2>
+                            <button class="btn btn-secondary btn-sm" id="btn-refresh-part">Refresh</button>
+                        </div>
+                        <div id="part-loading" class="loading-state hidden">Loading participations...</div>
+                        <div class="table-responsive">
+                            <table class="table" id="table-participations">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Household</th>
+                                        <th>Challenge</th>
+                                        <th>Baseline</th>
+                                        <th>Current</th>
+                                        <th>Reduction</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="part-empty" class="empty-state hidden">No participations found.</div>
+                    </div>
+                    
+                    <!-- Join Challenge Modal -->
+                    <div id="modal-join-challenge" class="modal hidden">
+                        <div class="modal-content card">
+                            <h2>Join Challenge</h2>
+                            <p id="join-ch-name" class="mb-4"></p>
+                            <form id="form-join-challenge">
+                                <input type="hidden" id="join-ch-id">
+                                <div class="form-group">
+                                    <label for="join-hh-id">Select Household <span class="required">*</span></label>
+                                    <select id="join-hh-id" class="form-control" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="join-month">Month <span class="required">*</span></label>
+                                    <input type="month" id="join-month" class="form-control" required>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="btn btn-secondary" id="btn-cancel-join">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" id="btn-confirm-join">Join Challenge</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Leaderboard View -->
+                <section id="view-leaderboard" class="view hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Leaderboard</h2>
+                            <div class="form-group row align-center mb-0">
+                                <label for="lb-month" class="mr-2">Month:</label>
+                                <input type="month" id="lb-month" class="form-control mr-2">
+                                <button class="btn btn-primary btn-sm" id="btn-load-lb">Load</button>
+                            </div>
+                        </div>
+                        <div id="lb-loading" class="loading-state hidden">Loading leaderboard...</div>
+                        <div class="table-responsive">
+                            <table class="table" id="table-leaderboard">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Household</th>
+                                        <th>Reduction %</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="lb-empty" class="empty-state">Select a month and load leaderboard.</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/households.js"></script>
+    <script src="/js/activities.js"></script>
+    <script src="/js/challenges.js"></script>
+    <script src="/js/leaderboard.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
